@@ -1,0 +1,1840 @@
+/* Cuenu 共通スタイル。HEX 値はこのトークン定義にのみ置き、以降は var(--cu-*) を使う。
+   文字サイズ・余白・省略行数は仮置き（docs/ui.md）。 */
+
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+  --cu-background: #F4F8F5;
+  --cu-surface: #FFFFFF;
+  --cu-border: #DCE6DF;
+  --cu-text-primary: #1D2923;
+  --cu-text-secondary: #617366;
+  --cu-accent: #087D65;
+  --cu-on-accent: #FFFFFF;
+  --cu-accent-hover: #066A56;
+  --cu-accent-pressed: #055847;
+  --cu-focus-ring: #087D65;
+  --cu-border-strong: #7C8F83;
+  --cu-danger: #B3261E;
+  --cu-code-background: #E8EFEA;
+  --cu-hover-overlay: rgba(8, 125, 101, 0.06);
+  --cu-selection: rgba(8, 125, 101, 0.22);
+  /* セグメント切替：下地は緑を含まない中立色、選択中は面の色＋影 */
+  --cu-segment-track: rgba(29, 41, 35, 0.07);
+  --cu-segment-thumb: var(--cu-surface);
+  --cu-segment-shadow: 0 1px 3px rgba(29, 41, 35, 0.16);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --cu-background: #08090B;
+  --cu-surface: #121316;
+  --cu-border: #26272B;
+  --cu-text-primary: #F2F1F2;
+  --cu-text-secondary: #929095;
+  --cu-accent: #42C7AE;
+  --cu-on-accent: #08090B;
+  --cu-accent-hover: #6AD6C1;
+  --cu-accent-pressed: #86DECD;
+  --cu-focus-ring: #42C7AE;
+  --cu-border-strong: #6B6A70;
+  --cu-danger: #FF8A80;
+  --cu-code-background: #1A1B1F;
+  --cu-hover-overlay: rgba(66, 199, 174, 0.08);
+  --cu-selection: rgba(66, 199, 174, 0.30);
+  --cu-segment-track: rgba(242, 241, 242, 0.06);
+  --cu-segment-thumb: rgba(242, 241, 242, 0.16);
+  --cu-segment-shadow: none;
+}
+
+:root {
+  /* 仮置きの寸法 */
+  --cu-font-size: 15px;
+  --cu-font-size-small: 13px;
+  --cu-line-height: 1.6;
+  --cu-gap: 12px;
+  --cu-pad-x: 16px;
+  --cu-radius: 8px;
+  --cu-max-width: 640px;
+  --cu-avatar-size: 38px;
+  --cu-bottom-nav-height: 56px;
+  --cu-collapse-lines: 6;
+  --cu-font: system-ui, -apple-system, 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic UI', sans-serif;
+  --cu-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--cu-background);
+  color: var(--cu-text-primary);
+  font-family: var(--cu-font);
+  font-size: var(--cu-font-size);
+  line-height: var(--cu-line-height);
+  -webkit-text-size-adjust: 100%;
+}
+
+::selection {
+  background: var(--cu-selection);
+}
+
+:focus-visible {
+  outline: 2px solid var(--cu-focus-ring);
+  outline-offset: 2px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.cu-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- レイアウト（1 カラム・セーフエリア） ---- */
+.cu-app {
+  max-width: var(--cu-max-width);
+  margin: 0 auto;
+  min-height: 100dvh;
+  padding-left: max(var(--cu-pad-x), env(safe-area-inset-left));
+  padding-right: max(var(--cu-pad-x), env(safe-area-inset-right));
+  padding-bottom: calc(env(safe-area-inset-bottom) + 24px);
+}
+
+.cu-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: calc(env(safe-area-inset-top) + 8px) 0 8px;
+  background: var(--cu-background);
+  border-bottom: 1px solid var(--cu-border);
+}
+
+.cu-logo {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.cu-logo-btn {
+  all: unset;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.cu-logo-btn:focus-visible {
+  outline: 2px solid var(--cu-focus-ring);
+  outline-offset: 2px;
+}
+
+.cu-header-spacer {
+  flex: 1;
+}
+
+.cu-sync-slot {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 4px;
+}
+.cu-sync-indicator {
+  appearance: none;
+  border: 0;
+  background: none;
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: var(--cu-text-secondary);
+  cursor: pointer;
+}
+.cu-sync-indicator:hover {
+  background: var(--cu-hover-overlay);
+}
+
+.cu-sync-indicator:focus-visible {
+  outline: 2px solid var(--cu-focus-ring);
+}
+
+.cu-nav {
+  display: flex;
+  gap: 2px;
+}
+
+.cu-nav-btn {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: var(--cu-text-secondary);
+  font: inherit;
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 40px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+/* ナビは選択・ホバーとも背景を付けず、アイコンの色だけで示す */
+@media (hover: hover) {
+  .cu-nav-btn:hover {
+    color: var(--cu-text-primary);
+  }
+}
+
+.cu-nav-btn[aria-current='page'] {
+  color: var(--cu-accent);
+}
+.cu-nav-btn[aria-current='page'] svg {
+  stroke-width: 2.3; /* 選択中は色だけでなく線の太さでも示す */
+}
+
+/* PWA: 下部ナビ（セーフエリア対応） */
+.cu-nav--bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 15;
+  justify-content: space-around;
+  padding: 6px max(var(--cu-pad-x), env(safe-area-inset-left)) calc(env(safe-area-inset-bottom) + 6px);
+  background: color-mix(in srgb, var(--cu-background) 92%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--cu-border);
+}
+.cu-nav--bottom .cu-nav-btn {
+  min-width: 64px;
+  min-height: 44px;
+}
+.cu-app--nav-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--cu-bottom-nav-height) + 24px);
+}
+.cu-app--nav-bottom .cu-toast-region {
+  bottom: calc(env(safe-area-inset-bottom) + var(--cu-bottom-nav-height) + 12px);
+}
+
+.cu-main {
+  padding-top: var(--cu-gap);
+}
+
+.cu-view-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cu-view-title {
+  font-size: 17px;
+  margin: 4px 0 8px;
+}
+
+.cu-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ---- ボタン・入力 ---- */
+.cu-btn,
+.cu-btn-primary,
+.cu-btn-danger {
+  appearance: none;
+  font: inherit;
+  font-size: 14px;
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: var(--cu-radius);
+  cursor: pointer;
+}
+
+.cu-btn {
+  background: var(--cu-surface);
+  color: var(--cu-text-primary);
+  border: 1px solid var(--cu-border-strong);
+}
+
+.cu-btn:hover:not(:disabled) {
+  background: var(--cu-hover-overlay);
+}
+
+.cu-btn-primary {
+  background: var(--cu-accent);
+  color: var(--cu-on-accent);
+  border: 1px solid var(--cu-accent);
+  font-weight: 600;
+}
+
+.cu-btn-primary:hover:not(:disabled) {
+  background: var(--cu-accent-hover);
+  border-color: var(--cu-accent-hover);
+}
+
+.cu-btn-primary:active:not(:disabled) {
+  background: var(--cu-accent-pressed);
+}
+
+.cu-btn-danger {
+  background: var(--cu-surface);
+  color: var(--cu-danger);
+  border: 1px solid var(--cu-danger);
+  font-weight: 600;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.cu-btn-text,
+.cu-link {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 4px 6px;
+  margin: 0 -2px;
+  font: inherit;
+  font-size: var(--cu-font-size-small);
+  color: var(--cu-text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  min-height: 32px;
+}
+
+/* タッチ端末ではタップ後にホバー表示が残るため、マウス操作の端末だけに付ける */
+@media (hover: hover) {
+  .cu-btn-text:hover:not(:disabled) {
+    color: var(--cu-text-primary);
+    background: var(--cu-hover-overlay);
+  }
+}
+
+.cu-link {
+  color: var(--cu-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 0 2px;
+  min-height: 0;
+}
+
+.cu-input {
+  font: inherit;
+  color: var(--cu-text-primary);
+  background: var(--cu-surface);
+  border: 1px solid var(--cu-border-strong);
+  border-radius: var(--cu-radius);
+  padding: 8px 10px;
+  min-height: 40px;
+  width: 100%;
+}
+
+.cu-input::placeholder,
+.cu-composer-input::placeholder {
+  color: var(--cu-text-secondary);
+}
+
+.cu-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--cu-font-size-small);
+  color: var(--cu-text-secondary);
+}
+
+.cu-check,
+.cu-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+
+.cu-check input,
+.cu-radio input {
+  accent-color: var(--cu-accent);
+  width: 18px;
+  height: 18px;
+}
+
+.cu-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.cu-error {
+  color: var(--cu-danger);
+  font-size: var(--cu-font-size-small);
+  margin: 6px 0;
+}
+
+.cu-notice {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cu-text-secondary);
+  margin: 6px 0;
+}
+
+.cu-meta-note {
+  color: var(--cu-text-secondary);
+  font-size: var(--cu-font-size-small);
+}
+
+.cu-empty {
+  color: var(--cu-text-secondary);
+  text-align: center;
+  padding: 32px 0;
+}
+
+/* ---- 入力欄 ---- */
+.cu-composer {
+  background: var(--cu-surface);
+  border: 1px solid var(--cu-border-strong);
+  border-radius: var(--cu-radius);
+  padding: 10px 12px 8px;
+  margin-bottom: var(--cu-gap);
+}
+
+/* 入力欄はフォーカスしても枠の色を変えない（ユーザー指示）。キャレットで入力位置は分かる */
+
+.cu-composer-input {
+  display: block;
+  width: 100%;
+  min-height: 3.2em;
+  max-height: 60vh;
+  resize: none;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--cu-text-primary);
+  font: inherit;
+  line-height: var(--cu-line-height);
+  padding: 0;
+}
+
+.cu-edit .cu-composer-input {
+  background: var(--cu-surface);
+  border: 1px solid var(--cu-border-strong);
+  border-radius: var(--cu-radius);
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+.cu-edit .cu-composer-input:focus-visible {
+  outline: 2px solid var(--cu-focus-ring);
+}
+
+.cu-composer-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.cu-composer-hint {
+  flex: 1;
+  text-align: right;
+  font-size: 12px;
+  color: var(--cu-text-secondary);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .cu-composer-hint {
+    visibility: hidden;
+  }
+}
+
+.cu-composer-image {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--cu-font-size-small);
+  color: var(--cu-text-secondary);
+  margin-top: 6px;
+}
+
+.cu-composer-thumb {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--cu-border);
+}
+
+.cu-quick {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--cu-surface);
+  box-shadow: inset 0 0 0 1px var(--cu-border);
+}
+/* ウィンドウ全体を入力面にする（入力欄の枠は付けない） */
+.cu-quick-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 0;
+  font-size: 12px;
+  color: var(--cu-text-secondary);
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+.cu-quick-title {
+  font-weight: 700;
+  color: var(--cu-text-primary);
+  letter-spacing: 0.02em;
+}
+.cu-quick .cu-composer {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 6px 16px 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.cu-quick .cu-composer-input {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+}
+
+/* ---- タイムライン（カード化しない・区切り線） ---- */
+.cu-feed {
+  border-top: 1px solid var(--cu-border);
+}
+
+.cu-memo {
+  display: grid;
+  grid-template-columns: var(--cu-avatar-size) minmax(0, 1fr);
+  column-gap: 12px;
+  padding: 14px 0 6px;
+  border-bottom: 1px solid var(--cu-border);
+}
+.cu-memo-content {
+  min-width: 0;
+}
+
+/* 投稿者アイコンの代わりの種別アイコン（自分=ペン / 画像要約=画像 / AI=✦） */
+.cu-avatar {
+  width: var(--cu-avatar-size);
+  height: var(--cu-avatar-size);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--cu-text-secondary);
+  background: var(--cu-surface);
+  border: 1px solid var(--cu-border);
+}
+.cu-avatar--ai {
+  color: var(--cu-accent);
+  border-color: color-mix(in srgb, var(--cu-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--cu-accent) 10%, var(--cu-background));
+}
+.cu-memo--reply {
+  --cu-avatar-size: 30px;
+}
+.cu-memo--reply .cu-avatar svg {
+  width: 15px;
+  height: 15px;
+}
+
+.cu-memo-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-size: var(--cu-font-size-small);
+  color: var(--cu-text-secondary);
+}
+
+.cu-ai-label {
+  color: var(--cu-accent);
+  font-weight: 700;
+}
+
+.cu-badge,
+.cu-status {
+  font-size: 12px;
+  color: var(--cu-text-secondary);
+  border: 1px solid var(--cu-border-strong);
+  border-radius: 999px;
+  padding: 0 8px;
+}
+
+.cu-status--error {
+  color: var(--cu-danger);
+  border-color: var(--cu-danger);
+}
+
+.cu-memo-body {
+  overflow-wrap: anywhere;
+  margin-top: 2px;
+}
+
+.cu-memo-body--collapsed {
+  max-height: calc(1em * var(--cu-line-height) * var(--cu-collapse-lines));
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent);
+  mask-image: linear-gradient(to bottom, black 70%, transparent);
+}
+
+.cu-expand {
+  color: var(--cu-accent);
+}
+
+.cu-memo-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 2px 0 0 -8px;
+}
+
+.cu-icon-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  min-width: 34px;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+.cu-icon-count {
+  font-size: var(--cu-font-size-small);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 「…」メニュー */
+.cu-more {
+  position: relative;
+}
+.cu-more-btn {
+  min-width: 32px;
+  letter-spacing: 1px;
+}
+.cu-more-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  min-width: 168px;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  background: var(--cu-surface);
+  border: 1px solid var(--cu-border-strong);
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.14);
+}
+.cu-more-item {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  text-align: left;
+  font: inherit;
+  font-size: var(--cu-font-size-small);
+  color: var(--cu-text-primary);
+  cursor: pointer;
+}
+.cu-more-item:hover,
+.cu-more-item:focus-visible {
+  background: var(--cu-hover-overlay);
+}
+.cu-more-item:focus-visible {
+  outline: 2px solid var(--cu-focus-ring);
+  outline-offset: -2px;
+}
+.cu-more-item--danger {
+  color: var(--cu-danger);
+}
+
+.cu-memo-tags {
+  margin: 4px 0 0;
+  font-size: var(--cu-font-size-small);
+  color: var(--cu-text-secondary);
+}
+
+.cu-tag {
+  appearance: none;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-size: var(--cu-font-size-small);
+  color: var(--cu-text-secondary);
+  padding: 2px 8px;
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+.cu-tag:hover {
+  border-color: var(--cu-border-strong);
+}
+
+.cu-tag[aria-pressed='true'] {
+  color: var(--cu-accent);
+  border-color: var(--cu-accent);
+  font-weight: 600;
+}
+
+.cu-new-posts {
+  position: sticky;
+  top: calc(env(safe-area-inset-top) + 60px);
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.cu-feed-end {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+}
+
+.cu-back-btn {
+  margin-left: -8px;
+}
+
+/* ---- スレッド：アイコン間を縦線でつなぐ会話表示 ---- */
+.cu-thread-flow {
+  --cu-node-pad: 14px;
+}
+.cu-thread-node {
+  position: relative;
+  --cu-node-avatar: var(--cu-avatar-size);
+}
+.cu-thread-node--reply,
+.cu-thread-node--compose {
+  --cu-node-avatar: 30px;
+}
+/* 次のノードのアイコンまで線を伸ばす（最後のノード＝返信入力には付けない） */
+.cu-thread-node:not(.cu-thread-node--compose)::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--cu-avatar-size) / 2 - 1px);
+  top: calc(var(--cu-node-pad) + var(--cu-node-avatar) + 4px);
+  bottom: calc(-1 * var(--cu-node-pad) + 4px);
+  width: 2px;
+  border-radius: 1px;
+  background: var(--cu-border);
+}
+.cu-thread-flow .cu-memo {
+  border-bottom: 0;
+  padding: var(--cu-node-pad) 0 2px;
+}
+.cu-thread-flow .cu-memo--reply {
+  --cu-avatar-size: 38px; /* 列幅は親と同じにして縦線をそろえる */
+}
+.cu-thread-flow .cu-memo--reply .cu-avatar {
+  width: 30px;
+  height: 30px;
+  justify-self: center;
+}
+.cu-memo--thread-parent .cu-memo-body {
+  font-size: 16px;
+}
+
+.cu-thread-node--compose {
+  display: grid;
+  grid-template-columns: var(--cu-avatar-size) minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: start;
+  padding: var(--cu-node-pad) 0 var(--cu-gap);
+}
+.cu-avatar--compose {
+  width: 30px;
+  height: 30px;
+  justify-self: center;
+  margin-top: 8px;
+  border-style: dashed;
+}
+
+/* 返信入力：1 行のピル型。入力に合わせて伸び、右端に返信ボタン（外枠と同心の角丸） */
+.cu-reply-composer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 6px 6px 16px;
+  border-radius: 23px;
+  border-color: var(--cu-border-strong);
+  min-width: 0;
+}
+.cu-reply-composer .cu-composer-input {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  padding: 7px 0;
+  line-height: 1.6;
+}
+.cu-reply-composer .cu-composer-bar {
+  flex: none;
+  margin: 0;
+}
+.cu-reply-composer .cu-composer-hint {
+  display: none;
+}
+.cu-reply-composer .cu-btn-primary {
+  min-height: 34px;
+  padding: 0 16px;
+  border-radius: 17px;
+  font-size: 14px;
+  line-height: 34px;
+  white-space: nowrap;
+}
+.cu-reply-composer .cu-error {
+  flex-basis: 100%;
+  order: 3;
+}
+
+.cu-confirm,
+.cu-conflict,
+.cu-image-state {
+  font-size: 14px;
+  margin: 8px 0;
+}
+
+.cu-confirm,
+.cu-conflict {
+  background: var(--cu-surface);
+  border: 1px solid var(--cu-border-strong);
+  border-radius: var(--cu-radius);
+  padding: 10px 12px;
+}
+
+.cu-confirm p,
+.cu-conflict p {
+  margin: 0 0 8px;
+}
+
+.cu-conflict-version {
+  margin-bottom: 8px;
+}
+
+.cu-conflict-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: inherit;
+  margin: 0;
+  padding: 8px;
+  background: var(--cu-background);
+  border: 1px solid var(--cu-border);
+  border-radius: 6px;
+  max-height: 40vh;
+  overflow: auto;
+}
+
+.cu-summary {
+  margin: 4px 0 8px;
+  padding-left: 10px;
+  border-left: 3px solid var(--cu-border-strong);
+  white-space: pre-wrap;
+}
+
+/* ---- Markdown ---- */
+.cu-md > :first-child {
+  margin-top: 0;
+}
+
+.cu-md > :last-child {
+  margin-bottom: 0;
+}
+
+.cu-md p,
+.cu-md ul,
+.cu-md ol,
+.cu-md pre,
+.cu-md blockquote,
+.cu-md table {
+  margin: 0.4em 0;
+}
+
+.cu-md h1,
+.cu-md h2,
+.cu-md h3,
+.cu-md h4 {
+  font-size: 1.05em;
+  margin: 0.6em 0 0.3em;
+}
+
+.cu-md ul,
+.cu-md ol {
+  padding-left: 1.4em;
+}
+
+.cu-md li.task-list-item {
+  list-style: none;
+  margin-left: -1.2em;
+}
+
+.cu-md input[type='checkbox'] {
+  accent-color: var(--cu-accent);
+  margin-right: 6px;
+  vertical-align: -2px;
+}
+
+.cu-md a {
+  color: var(--cu-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+
+.cu-md code {
+  font-family: var(--cu-font-mono);
+  font-size: 0.9em;
+  background: var(--cu-code-background);
+  color: var(--cu-text-primary);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+.cu-md pre {
+  background: var(--cu-code-background);
+  border-radius: 6px;
+  padding: 10px 12px;
+  overflow-x: auto;
+}
+
+.cu-md pre code {
+  background: none;
+  padding: 0;
+}
+
+.cu-md blockquote {
+  border-left: 3px solid var(--cu-border-strong);
+  padding-left: 10px;
+  color: var(--cu-text-secondary);
+  margin-left: 0;
+}
+
+.cu-md table {
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+}
+
+.cu-md th,
+.cu-md td {
+  border: 1px solid var(--cu-border);
+  padding: 4px 8px;
+}
+
+.cu-md hr {
+  border: 0;
+  border-top: 1px solid var(--cu-border);
+}
+
+.cu-md-link-dest {
+  color: var(--cu-text-secondary);
+  font-size: 0.9em;
+}
+
+.cu-md-link-mark {
+  margin-left: 2px;
+  font-size: 0.85em;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.cu-md-img {
+  color: var(--cu-text-secondary);
+}
+
+/* ---- 検索・設定 ---- */
+.cu-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.cu-tab {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  font: inherit;
+  font-size: 14px;
+  color: var(--cu-text-secondary);
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.cu-tab[aria-selected='true'] {
+  color: var(--cu-accent);
+  border-bottom-color: var(--cu-accent);
+  font-weight: 600;
+}
+
+.cu-search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: var(--cu-gap);
+}
+
+.cu-filters {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.cu-tag-filter {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cu-settings-section {
+  padding: 8px 0 16px;
+  border-bottom: 1px solid var(--cu-border);
+}
+
+.cu-settings-section h3 {
+  font-size: 15px;
+  margin: 8px 0;
+}
+
+.cu-dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 12px;
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+
+.cu-dl dt {
+  color: var(--cu-text-secondary);
+}
+
+.cu-dl dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.cu-login,
+.cu-settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 420px;
+}
+
+/* ---- トースト ---- */
+.cu-toast-region {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom) + 16px);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.cu-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--cu-surface);
+  color: var(--cu-text-primary);
+  border: 1px solid var(--cu-border-strong);
+  border-radius: var(--cu-radius);
+  padding: 6px 8px 6px 14px;
+  font-size: 14px;
+  max-width: calc(100vw - 32px);
+}
+
+.cu-toast .cu-btn-text:first-of-type {
+  color: var(--cu-accent);
+  font-weight: 600;
+}
+
+@media (max-width: 420px) {
+  :root {
+    --cu-pad-x: 12px;
+  }
+  .cu-nav-btn {
+    padding: 6px 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+  }
+}
+
+.cu-md-plain {
+  white-space: pre-wrap;
+}
+
+.cu-settings-section > .cu-btn + .cu-btn {
+  margin-left: 8px;
+}
+
+/* タッチ主体の端末ではキーボードショートカットの案内を出さない */
+@media (hover: none) and (pointer: coarse) {
+  .cu-composer-hint {
+    visibility: hidden; /* 投稿ボタンの右寄せ配置は保つ */
+  }
+}
+
+/* タグは本文の左端にそろえる（ピルの内側余白ぶん左へ寄せる） */
+.cu-memo-tags {
+  margin-left: -8px;
+}
+
+/* スレッド内は「…」を日時行の右端へ（返信ごとの余分な行をなくす） */
+.cu-thread-flow .cu-memo-content {
+  position: relative;
+}
+.cu-thread-flow .cu-memo-meta {
+  padding-right: 40px;
+}
+.cu-thread-flow .cu-memo-actions {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  margin: 0;
+}
+.cu-thread-flow .cu-more-menu {
+  left: auto;
+  right: 0;
+}
+.cu-thread-flow > .cu-thread-node:first-child .cu-memo {
+  padding-bottom: 12px; /* 親投稿は少し間を取って返信と区別 */
+}
+
+/* 同期状態アイコン（投稿の日時行） */
+.cu-status-icon {
+  display: inline-flex;
+  align-self: center;
+  color: var(--cu-text-secondary);
+}
+.cu-status-icon--error {
+  color: var(--cu-danger);
+}
+.cu-spin {
+  animation: cu-spin 1.2s linear infinite;
+}
+@keyframes cu-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cu-spin {
+    animation: none;
+  }
+}
+
+/* 自分のメモのアバター：丸なし。AI が選んだ絵文字をそのまま置く */
+.cu-avatar--plain {
+  border: 0;
+  background: transparent;
+}
+.cu-avatar--emoji {
+  font-size: 22px;
+  line-height: 1;
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+}
+.cu-memo--reply .cu-avatar--emoji {
+  font-size: 18px;
+}
+.cu-avatar--compose {
+  border: 0;
+  background: transparent;
+}
+
+.cu-like--on,
+.cu-like--on:hover:not(:disabled) {
+  color: var(--cu-accent);
+}
+
+/* ---- いいね：弾むハートと広がる粒 ---- */
+.cu-like {
+  position: relative;
+  overflow: visible;
+}
+.cu-like-icon {
+  display: inline-flex;
+  transition: transform 0.15s ease;
+}
+.cu-like:active .cu-like-icon {
+  transform: scale(0.85);
+}
+.cu-like--pop .cu-like-icon {
+  animation: cu-heart-pop 0.6s cubic-bezier(0.17, 0.89, 0.32, 1.28);
+}
+@keyframes cu-heart-pop {
+  0% { transform: scale(0.6); }
+  35% { transform: scale(1.35); }
+  60% { transform: scale(0.92); }
+  80% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+.cu-like-burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.cu-like-burst::before {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: -14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--cu-accent);
+  animation: cu-like-ring 0.5s ease-out forwards;
+}
+.cu-like-burst i {
+  position: absolute;
+  left: -2.5px;
+  top: -2.5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--cu-accent);
+  transform: rotate(var(--a)) translateY(0);
+  animation: cu-like-dot 0.6s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+.cu-like-burst i:nth-child(even) {
+  width: 4px;
+  height: 4px;
+  opacity: 0.7;
+}
+@keyframes cu-like-ring {
+  0% { transform: scale(0.3); opacity: 0.9; }
+  100% { transform: scale(1.4); opacity: 0; border-width: 0; }
+}
+@keyframes cu-like-dot {
+  0% { transform: rotate(var(--a)) translateY(-6px) scale(1); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: rotate(var(--a)) translateY(-20px) scale(0.3); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cu-like--pop .cu-like-icon,
+  .cu-like-burst::before,
+  .cu-like-burst i {
+    animation: none;
+  }
+  .cu-like-burst {
+    display: none;
+  }
+}
+
+/* ---- ヘッダーの通知（AI の投稿） ---- */
+.cu-bell {
+  position: relative;
+  appearance: none;
+  border: 0;
+  background: none;
+  color: var(--cu-text-secondary);
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.cu-bell[aria-current='page'] {
+  color: var(--cu-accent);
+}
+.cu-bell[aria-current='page'] svg {
+  stroke-width: 2.3;
+}
+@media (hover: hover) {
+  .cu-bell:hover {
+    color: var(--cu-text-primary);
+  }
+}
+.cu-bell-badge {
+  position: absolute;
+  top: 4px;
+  right: 3px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--cu-accent);
+  color: var(--cu-on-accent);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--cu-background);
+}
+.cu-unread {
+  position: relative;
+}
+.cu-unread::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 30px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cu-accent);
+}
+
+/* ---- カレンダー ---- */
+.cu-cal-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 4px 0 8px;
+}
+.cu-cal-title {
+  font-size: 17px;
+  margin: 0 4px;
+  min-width: 7.5em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.cu-cal-today {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--cu-font-size-small);
+  color: var(--cu-accent);
+}
+.cu-cal-row,
+.cu-cal-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.cu-cal-week {
+  text-align: center;
+  font-size: 11px;
+  color: var(--cu-text-secondary);
+  padding: 4px 0;
+}
+.cu-cal--sun {
+  color: var(--cu-danger);
+}
+.cu-cal-day {
+  appearance: none;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--cu-text-primary);
+  aspect-ratio: 1 / 1;
+  max-height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.cu-cal-day--empty {
+  cursor: default;
+}
+.cu-cal-num {
+  font-size: 14px;
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  border-radius: 50%;
+  font-variant-numeric: tabular-nums;
+}
+.cu-cal-day--future .cu-cal-num {
+  color: var(--cu-text-secondary);
+}
+.cu-cal-day--today .cu-cal-num {
+  color: var(--cu-accent);
+  font-weight: 700;
+}
+.cu-cal-day--selected .cu-cal-num {
+  background: var(--cu-accent);
+  color: var(--cu-on-accent);
+  font-weight: 700;
+}
+@media (hover: hover) {
+  .cu-cal-day:not(.cu-cal-day--empty):hover {
+    background: var(--cu-hover-overlay);
+  }
+}
+/* 記録量は点の大きさで示す（色だけに頼らない）。AI 投稿がある日は小さな輪 */
+.cu-cal-dot {
+  position: relative;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: transparent;
+}
+.cu-cal-dot--l1 { background: var(--cu-text-secondary); }
+.cu-cal-dot--l2 { background: var(--cu-text-secondary); width: 6px; height: 6px; }
+.cu-cal-dot--l3 { background: var(--cu-text-primary); width: 7px; height: 7px; }
+.cu-cal-ai {
+  position: absolute;
+  left: calc(100% + 2px);
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin-top: -2.5px;
+  border-radius: 50%;
+  border: 1.5px solid var(--cu-accent);
+}
+.cu-cal-daytitle {
+  font-size: 15px;
+  margin: 16px 0 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--cu-border);
+}
+
+/* ---- 検索 ---- */
+.cu-searchbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 6px 0 14px;
+  margin-top: 4px;
+  background: var(--cu-surface);
+  border: 1px solid var(--cu-border-strong);
+  border-radius: 23px;
+}
+.cu-searchbar-icon {
+  flex: none;
+  color: var(--cu-text-secondary);
+}
+.cu-searchbar-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  color: var(--cu-text-primary);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.cu-searchbar-input::-webkit-search-cancel-button {
+  display: none;
+}
+.cu-searchbar-input::placeholder {
+  color: var(--cu-text-secondary);
+}
+.cu-searchbar-clear {
+  appearance: none;
+  border: 0;
+  background: var(--cu-segment-track);
+  color: var(--cu-text-secondary);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex: none;
+}
+.cu-searchbar-go {
+  min-height: 34px;
+  padding: 0 16px;
+  border-radius: 17px;
+  font-size: 14px;
+}
+.cu-search-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 10px 0 6px;
+}
+.cu-segment {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border-radius: 999px;
+  background: var(--cu-segment-track);
+}
+.cu-segment-btn {
+  appearance: none;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--cu-text-secondary);
+  padding: 5px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.cu-segment-btn[aria-selected='true'],
+.cu-segment-btn[aria-pressed='true'] {
+  background: var(--cu-segment-thumb);
+  color: var(--cu-text-primary);
+  font-weight: 600;
+  box-shadow: var(--cu-segment-shadow);
+}
+.cu-segment--small .cu-segment-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+}
+.cu-filter-toggle {
+  appearance: none;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--cu-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.cu-filter-toggle--active,
+.cu-filter-toggle[aria-expanded='true'] {
+  color: var(--cu-accent);
+}
+.cu-filter-count {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--cu-accent);
+  color: var(--cu-on-accent);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+.cu-filter-panel {
+  border: 0;
+  margin: 0 0 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--cu-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cu-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cu-filter-label {
+  font-size: 12px;
+  color: var(--cu-text-secondary);
+  width: 3.5em;
+  flex: none;
+}
+.cu-filter-dates {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  color: var(--cu-text-secondary);
+}
+.cu-date {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--cu-text-primary);
+  background: var(--cu-segment-track);
+  border: 0;
+  border-radius: 10px;
+  padding: 6px 8px;
+  min-height: 32px;
+}
+.cu-chips,
+.cu-tag-scroll {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.cu-tag-scroll {
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-left: calc(-1 * var(--cu-pad-x));
+  margin-right: calc(-1 * var(--cu-pad-x));
+  padding: 0 var(--cu-pad-x) 2px;
+}
+.cu-tag-scroll::-webkit-scrollbar {
+  display: none;
+}
+.cu-chip {
+  appearance: none;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--cu-text-primary);
+  background: var(--cu-surface);
+  border: 1px solid var(--cu-border);
+  border-radius: 999px;
+  padding: 4px 11px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.cu-chip[aria-pressed='true'] {
+  border-color: var(--cu-accent);
+  color: var(--cu-accent);
+  font-weight: 600;
+}
+.cu-chip-count {
+  font-size: 11px;
+  color: var(--cu-text-secondary);
+}
+
+/* 通知画面は見出しなし。一覧の上の区切り線も付けない */
+.cu-notifications .cu-feed {
+  border-top: 0;
+}
+
+/* Mac（上部ナビ）: ベルはナビの右に、細い区切りを挟んで置く */
+.cu-app--nav-top .cu-bell {
+  margin-left: 6px;
+  position: relative;
+}
+.cu-app--nav-top .cu-bell::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 10px;
+  bottom: 10px;
+  width: 1px;
+  background: var(--cu-border);
+}
+
+/* 画像のドラッグ&ドロップ中 */
+.cu-composer--drop {
+  border-style: dashed;
+  border-color: var(--cu-accent);
+  background: color-mix(in srgb, var(--cu-accent) 6%, var(--cu-surface));
+}
+.cu-quick .cu-composer--drop {
+  box-shadow: inset 0 0 0 2px var(--cu-accent);
+}
+.cu-drop-hint {
+  font-size: 12px;
+  color: var(--cu-accent);
+  font-weight: 600;
+}
+
+/* ---- Mac: 左カラム（幅 820px 以上） ---- */
+.cu-app--sidebar {
+  max-width: none;
+  display: grid;
+  grid-template-columns: 272px minmax(0, 1fr);
+  padding: 0;
+}
+.cu-app--sidebar > .cu-main {
+  width: 100%;
+  max-width: var(--cu-max-width);
+  margin: 0 auto;
+  padding: 16px var(--cu-pad-x) 40px;
+  box-sizing: border-box;
+}
+.cu-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 14px 10px;
+  border-right: 1px solid var(--cu-border);
+  overflow-y: auto;
+}
+.cu-sidebar-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding-left: 4px;
+}
+.cu-sidebar-head .cu-logo {
+  margin: 0;
+}
+.cu-sidebar-head .cu-header-spacer {
+  flex: 1;
+}
+.cu-searchbar--side {
+  height: 36px;
+  margin: 0;
+  padding: 0 10px 0 12px;
+  border-radius: 10px;
+  border-color: var(--cu-border);
+}
+.cu-searchbar--side .cu-searchbar-input {
+  font-size: 14px;
+}
+.cu-side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cu-side-item {
+  appearance: none;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--cu-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+.cu-side-item[aria-current='page'] {
+  color: var(--cu-accent);
+  font-weight: 600;
+}
+.cu-side-item[aria-current='page'] svg {
+  stroke-width: 2.3;
+}
+@media (hover: hover) {
+  .cu-side-item:hover,
+  .cu-side-icon:hover {
+    background: var(--cu-segment-track);
+    color: var(--cu-text-primary);
+  }
+}
+.cu-side-badge {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--cu-accent);
+  color: var(--cu-on-accent);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+.cu-sidebar-foot {
+  margin-top: auto;
+  display: flex;
+  padding-top: 8px;
+  border-top: 1px solid var(--cu-border);
+}
+.cu-side-icon {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: var(--cu-text-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.cu-side-icon[aria-current='page'] {
+  color: var(--cu-accent);
+}
+
+/* 左カラムの小さなカレンダー */
+.cu-calendar--compact .cu-cal-head {
+  margin: 0 0 2px;
+}
+.cu-calendar--compact .cu-cal-title {
+  font-size: 13px;
+  min-width: 6.5em;
+}
+.cu-calendar--compact .cu-cal-today {
+  right: 0;
+  font-size: 12px;
+}
+.cu-calendar--compact .cu-cal-week {
+  font-size: 10px;
+  padding: 2px 0;
+}
+.cu-calendar--compact .cu-cal-day {
+  aspect-ratio: auto;
+  height: 32px;
+  gap: 1px;
+  border-radius: 8px;
+}
+.cu-calendar--compact .cu-cal-num {
+  font-size: 12px;
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+}
+.cu-calendar--compact .cu-cal-dot--l1,
+.cu-calendar--compact .cu-cal-dot--l2,
+.cu-calendar--compact .cu-cal-dot--l3 {
+  width: 4px;
+  height: 4px;
+}
+.cu-calendar--compact .cu-cal-dot--l3 {
+  width: 5px;
+  height: 5px;
+}
+.cu-calendar--compact .cu-cal-ai {
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-width: 1px;
+}
+.cu-app--sidebar .cu-toast-region {
+  left: 272px;
+}
+
+/* 低いウィンドウでも設定アイコンが常に見えるよう、左カラムの下端に固定 */
+.cu-sidebar-foot {
+  position: sticky;
+  bottom: -10px;
+  padding-bottom: 10px;
+  background: var(--cu-background);
+}

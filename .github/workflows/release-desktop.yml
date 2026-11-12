@@ -1,0 +1,165 @@
+# Mac 版リリース: タグ vX.Y.Z の push で Apple Silicon 向け DMG をビルドし、
+# GitHub Releases に DMG と SHA-256 を添付、Homebrew Tap の Cask を更新する。
+#
+# 必要な設定（リポジトリの Settings → Secrets and variables → Actions）:
+#   Secret  HOMEBREW_TAP_TOKEN   Tap リポジトリ（例 kzmcode/homebrew-tap）に contents:write と
+#                                pull-requests:write を持つ fine-grained PAT。未設定なら Cask 更新をスキップ。
+#   Variable HOMEBREW_TAP_REPO   Tap リポジトリ名（例 kzmcode/homebrew-tap）。未設定なら Cask 更新をスキップ。
+#   Variable HOMEBREW_TAP_DIRECT_PUSH  'true' なら PR を作らず既定ブランチへ直接 push（任意）。
+# Release の作成は release ジョブだけが GITHUB_TOKEN（contents: write）で行う。Apple の署名・公証は行わない（ad-hoc 署名のみ）。
+name: Release desktop
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '既存タグを再ビルドする場合のタグ名（例 v0.1.0）'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest # Apple Silicon（aarch64）。Intel / Universal は未対応・未検証
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+      sha256: ${{ steps.sum.outputs.sha256 }}
+      tag: ${{ steps.ver.outputs.tag }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          persist-credentials: false
+      - id: ver
+        name: タグと tauri.conf.json の version を照合
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::タグ名は vX.Y.Z 形式にしてください: $TAG"; exit 1
+          fi
+          VERSION="${TAG#v}"
+          CONF=$(node -p "require('./apps/desktop/src-tauri/tauri.conf.json').version")
+          if [ "$VERSION" != "$CONF" ]; then
+            echo "::error::tag $TAG と tauri.conf.json の version $CONF が一致しません"; exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: apps/desktop/src-tauri
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @cuenu/desktop test
+      - name: Tauri build (.app / .dmg)
+        env:
+          CI: 'true' # DMG 作成時の Finder 装飾（AppleScript）を省略
+        run: pnpm --filter @cuenu/desktop tauri build
+      - id: sum
+        name: SHA-256
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          NAME="Cuenu_${VERSION}_aarch64.dmg"
+          DMG="apps/desktop/src-tauri/target/release/bundle/dmg/$NAME"
+          test -f "$DMG"
+          mkdir -p out && cp "$DMG" out/
+          cd out
+          shasum -a 256 "$NAME" > "$NAME.sha256"
+          cat ./*.sha256
+          echo "sha256=$(cut -d' ' -f1 ./*.sha256)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dmg
+          path: out/
+          if-no-files-found: error
+
+  # 書き込み権限はサードパーティ action や依存のスクリプトを実行しないこのジョブだけに付ける
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: dmg
+          path: out
+      - name: GitHub Release に添付
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          NOTES="Apple Silicon（aarch64）向け。Apple の Developer ID 署名・公証はしていません（初回起動の手順は docs/install-mac.md）。"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" out/* --clobber
+          else
+            gh release create "$TAG" out/* --title "Cuenu $TAG" --notes "$NOTES" --verify-tag
+          fi
+
+  cask:
+    needs: [build, release]
+    runs-on: ubuntu-latest
+    env:
+      TAP_REPO: ${{ vars.HOMEBREW_TAP_REPO }}
+      TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+    steps:
+      - name: 設定確認
+        id: check
+        run: |
+          if [ -z "$TAP_REPO" ] || [ -z "$TAP_TOKEN" ]; then
+            echo "::notice::HOMEBREW_TAP_REPO / HOMEBREW_TAP_TOKEN が未設定のため Cask 更新をスキップします"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        if: steps.check.outputs.skip != 'true'
+        with:
+          path: src
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        if: steps.check.outputs.skip != 'true'
+        with:
+          repository: ${{ vars.HOMEBREW_TAP_REPO }}
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: tap
+      - name: Cask を生成して PR / push
+        if: steps.check.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          VERSION: ${{ needs.build.outputs.version }}
+          SHA256: ${{ needs.build.outputs.sha256 }}
+          SOURCE_REPO: ${{ github.repository }}
+          DIRECT: ${{ vars.HOMEBREW_TAP_DIRECT_PUSH }}
+        run: |
+          mkdir -p tap/Casks
+          sed -e "s|^  version \".*\"|  version \"$VERSION\"|" \
+              -e "s|^  sha256 \".*\"|  sha256 \"$SHA256\"|" \
+              -e "s|YOUR_ID/cuenu|$SOURCE_REPO|g" \
+              src/packaging/homebrew/cuenu.rb > tap/Casks/cuenu.rb
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Casks/cuenu.rb
+          if git diff --cached --quiet; then echo "変更なし"; exit 0; fi
+          if [ "$DIRECT" = "true" ]; then
+            git commit -m "cuenu $VERSION"
+            git push
+          else
+            BRANCH="cuenu-$VERSION"
+            git checkout -b "$BRANCH"
+            git commit -m "cuenu $VERSION"
+            git push -u origin "$BRANCH" --force
+            gh pr create --repo "$TAP_REPO" --head "$BRANCH" --title "cuenu $VERSION" \
+              --body "Cuenu $VERSION の Cask 更新（${SOURCE_REPO} のリリースワークフローで自動生成）。" || true
+          fi

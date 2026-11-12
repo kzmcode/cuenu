@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-pause-shortcut"
+description = "Enables the pause_shortcut command without any pre-configured scope."
+commands.allow = ["pause_shortcut"]
+
+[[permission]]
+identifier = "deny-pause-shortcut"
+description = "Denies the pause_shortcut command without any pre-configured scope."
+commands.deny = ["pause_shortcut"]

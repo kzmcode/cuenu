@@ -1,0 +1,39 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "cuenu",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-20",
+  "observability": { "enabled": true },
+
+  // PWA（apps/web のビルド成果物）を同一オリジンで配信。/api/* だけ Worker が先に処理し、
+  // それ以外は静的アセット（見つからなければ index.html へ SPA フォールバック）。
+  "assets": {
+    "directory": "../web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+
+  // D1。デプロイ前に `wrangler d1 create cuenu` の結果で database_id を置き換える（docs/server.md）
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cuenu",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // 定期処理（仮置き: 3 時間ごと。docs/server.md 参照）
+  "triggers": { "crons": ["17 */3 * * *"] },
+
+  // 秘密情報は vars に書かない（OWNER_PASSWORD / GEMINI_API_KEY / VAPID_* は `wrangler secret put`）
+  "vars": {
+    "GEMINI_MODEL": "gemini-3.5-flash-lite",
+    "GEMINI_EMBED_MODEL": "gemini-embedding-001",
+    "GEMINI_EMBED_DIM": "256",
+    "SEMANTIC_SCAN_LIMIT": "2000",
+    "CRON_BATCH_SIZE": "10",
+    "CORS_ORIGINS": ""
+  }
+}

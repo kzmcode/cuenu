@@ -1,0 +1,21 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "通常ウィンドウ（接続・設定・同期・通知）。Keychain のトークン操作はこのウィンドウだけ",
+  "windows": ["main"],
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "notification:default",
+    "allow-get-settings",
+    "allow-set-shortcut",
+    "allow-set-notifications-enabled",
+    "allow-set-active-connection",
+    "allow-secret-set-token",
+    "allow-secret-get-token",
+    "allow-secret-delete-token",
+    "allow-pause-shortcut",
+    "allow-resume-shortcut",
+    "allow-capture-screen"
+  ]
+}

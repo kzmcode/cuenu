@@ -1,0 +1,16 @@
+.web-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: calc(env(safe-area-inset-top) + 6px) 16px 6px;
+  background: var(--cu-surface);
+  color: var(--cu-text-primary);
+  border-bottom: 1px solid var(--cu-border-strong);
+  font-size: var(--cu-font-size-small);
+}
+
+.web-banner .cu-btn-text {
+  color: var(--cu-accent);
+  font-weight: 600;
+}

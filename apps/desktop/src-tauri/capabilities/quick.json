@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "quick",
+  "description": "クイック入力ウィンドウ（ローカル保存のみ。トークン・設定変更・通知は不可）",
+  "windows": ["quick"],
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:window:allow-start-dragging",
+    "core:window:allow-internal-toggle-maximize",
+    "allow-get-settings",
+    "allow-hide-quick",
+    "allow-capture-screen"
+  ]
+}

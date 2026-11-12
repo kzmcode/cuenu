@@ -1,0 +1,10 @@
+# ローカル開発用（cp .dev.vars.example .dev.vars）。.dev.vars は gitignore 済み。本番は `wrangler secret put <NAME>`
+OWNER_PASSWORD=dev-password
+# Gemini Developer API キー（未設定なら AI 機能は ai_unavailable を返し、同期等は動く）
+GEMINI_API_KEY=
+# `pnpm --filter @cuenu/server vapid:generate` で生成
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+VAPID_SUBJECT=mailto:you@example.com
+# 追加許可 Origin（Vite dev の PWA=5173, Tauri dev=1420）。tauri://localhost 等は常に許可
+CORS_ORIGINS=http://localhost:5173,http://localhost:1420
