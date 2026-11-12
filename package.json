@@ -1,0 +1,21 @@
+{
+  "name": "cuenu",
+  "private": true,
+  "packageManager": "pnpm@12.15.0",
+  "scripts": {
+    "dev:web": "pnpm --filter @cuenu/web dev",
+    "dev:server": "pnpm --filter @cuenu/server dev",
+    "dev:desktop": "pnpm --filter @cuenu/desktop tauri dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "vitest": "^4.1.12"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,45 @@
+# ---- 依存・ビルド成果物 ----
+node_modules/
+dist/
+target/
+coverage/
+*.tsbuildinfo
+.vite/
+vite.config.*.timestamp-*
+
+# ---- Cloudflare / wrangler（ローカル D1・ログ） ----
+.wrangler/
+
+# ---- 秘密情報（サンプルだけは含める） ----
+.dev.vars*
+!.dev.vars.example
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p8
+*.p12
+*.cer
+*.mobileprovision
+*.local
+
+# ---- ログ ----
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# ---- エディタ・OS ----
+.DS_Store
+._*
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# ---- Claude Code のローカル設定（共有設定 .claude/settings.json は含める） ----
+.claude/settings.local.json
+
+# ---- 開発用メモ（要件定義・並列開発のホワイトボード等。公開しない） ----
+ref/

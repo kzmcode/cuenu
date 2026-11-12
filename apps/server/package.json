@@ -1,0 +1,24 @@
+{
+  "name": "@cuenu/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8787",
+    "db:migrate:local": "wrangler d1 migrations apply cuenu --local",
+    "db:migrate:remote": "wrangler d1 migrations apply cuenu --remote",
+    "deploy": "wrangler deploy",
+    "vapid:generate": "node scripts/generate-vapid-keys.mjs",
+    "typecheck": "tsc -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@cuenu/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.12",
+    "wrangler": "^4.156.2"
+  }
+}

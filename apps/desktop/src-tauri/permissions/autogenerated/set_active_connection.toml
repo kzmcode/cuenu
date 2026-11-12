@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-set-active-connection"
+description = "Enables the set_active_connection command without any pre-configured scope."
+commands.allow = ["set_active_connection"]
+
+[[permission]]
+identifier = "deny-set-active-connection"
+description = "Denies the set_active_connection command without any pre-configured scope."
+commands.deny = ["set_active_connection"]

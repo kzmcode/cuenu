@@ -1,0 +1,99 @@
+/* desktop 固有の最小スタイル。色は @cuenu/ui のテーマトークン（--cu-*）だけを使う。 */
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  background: var(--cu-background);
+  color: var(--cu-text-primary);
+}
+
+.cu-desktop-setup {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 32px 20px;
+}
+
+.cu-desktop-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.cu-desktop-confirm {
+  border: 1px solid var(--cu-border-strong, var(--cu-border));
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--cu-surface);
+}
+
+.cu-desktop-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 8px 8px 8px 14px;
+  border: 1px solid var(--cu-border);
+  border-radius: 10px;
+  background: var(--cu-surface);
+  font-size: 13px;
+  color: var(--cu-text-secondary);
+}
+
+/* クイック入力: 装飾なしウィンドウ全体をドラッグ可能な余白付きで表示 */
+html:has(.cu-quick),
+html:has(.cu-quick) body {
+  overflow: hidden;
+}
+
+/* ショートカットの設定 */
+.cu-shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+.cu-shortcut-current,
+.cu-shortcut-recorder {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 180px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cu-border-strong);
+  background: var(--cu-surface);
+  color: var(--cu-text-primary);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.cu-shortcut-recorder {
+  justify-content: center;
+  border: 2px solid var(--cu-accent);
+  color: var(--cu-text-secondary);
+  outline: none;
+  cursor: default;
+}
+.cu-shortcut-edit {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--cu-accent);
+}
+.cu-kbd {
+  font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--cu-segment-track, rgba(0, 0, 0, 0.06));
+  border: 1px solid var(--cu-border);
+}
+.cu-kbd--live {
+  color: var(--cu-accent);
+}
