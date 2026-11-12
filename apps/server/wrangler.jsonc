@@ -19,7 +19,7 @@
     {
       "binding": "DB",
       "database_name": "cuenu",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "dde06976-b002-4cac-b2ca-6fd99ae7b462",
       "migrations_dir": "migrations"
     }
   ],
