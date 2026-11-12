@@ -276,7 +276,7 @@ describe('sync', () => {
     expect((await b.repo.search({ keyword: 'm', limit: 500 })).items.length).toBe(500);
     expect((await b.repo.timeline(null, 2000)).items.length).toBe(500);
     expect(await b.repo.internal.backend.getMeta('syncCursor')).toBe(server.seq);
-  });
+  }, 30_000); // 1,203 件を作って同期する量のテスト。CI の遅い環境でも収まるよう長めにする
 
   it('401 は認証切れ状態にし、ローカルデータは消さない。updateConnection で再開', async () => {
     const server = new MockServer();
