@@ -8,6 +8,7 @@
 
 ```bash
 brew tap kzmcode/tap
+brew trust kzmcode/tap   # Homebrew 7 以降は、公式以外の Tap を信頼済みにしないと読み込まない
 brew install --cask cuenu
 ```
 
