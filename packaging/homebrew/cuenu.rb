@@ -17,6 +17,7 @@ cask "cuenu" do
 
   # Apple Silicon のみ（Intel / Universal Binary は未対応・未検証）
   depends_on arch: :arm64
+  depends_on macos: ">= :big_sur"
 
   app "Cuenu.app"
 
@@ -29,4 +30,18 @@ cask "cuenu" do
     "~/Library/Saved Application State/io.github.kzmcode.cuenu.savedState",
     "~/Library/WebKit/io.github.kzmcode.cuenu",
   ]
+
+  caveats <<~EOS
+    Cuenu is ad-hoc signed and not notarized by Apple. On first launch macOS
+    Gatekeeper will block it. To approve it:
+      1. Try to open Cuenu once (it will be blocked).
+      2. Open System Settings > Privacy & Security, scroll to the Security section
+         and click "Open Anyway" next to Cuenu, then confirm.
+
+    On first launch, enter the URL of your own Cuenu server and its owner password.
+    The screenshot button needs Screen Recording permission. After upgrading, macOS
+    may ask for Screen Recording and Keychain access again because the ad-hoc
+    signature changes with every build. Notes and settings are kept on uninstall;
+    use `brew uninstall --zap --cask cuenu` to remove them.
+  EOS
 end
