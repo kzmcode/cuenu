@@ -29,7 +29,7 @@ jobs:
       sha256: ${{ steps.sum.outputs.sha256 }}
       tag: ${{ steps.ver.outputs.tag }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.tag || github.ref }}
           persist-credentials: false
@@ -122,12 +122,12 @@ jobs:
             echo "::notice::HOMEBREW_TAP_REPO / HOMEBREW_TAP_TOKEN が未設定のため Cask 更新をスキップします"
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: steps.check.outputs.skip != 'true'
         with:
           path: src
           persist-credentials: false
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: steps.check.outputs.skip != 'true'
         with:
           repository: ${{ vars.HOMEBREW_TAP_REPO }}
