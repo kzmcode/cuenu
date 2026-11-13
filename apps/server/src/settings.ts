@@ -3,7 +3,7 @@ import type { Db } from './db';
 import { badRequest } from './http';
 import { isValidTimeZone } from './util';
 
-export const MAX_DAILY_LIMIT = 10;
+const MAX_DAILY_LIMIT = 10;
 
 export async function getSettings(db: Db): Promise<UserSettings> {
   const r = await db.first<{ value: string }>(`SELECT value FROM settings WHERE key = 'user'`);
@@ -18,7 +18,7 @@ export async function getSettings(db: Db): Promise<UserSettings> {
   return { ...DEFAULT_SETTINGS, ...stored };
 }
 
-export function validateSettingsPatch(patch: unknown): Partial<UserSettings> {
+function validateSettingsPatch(patch: unknown): Partial<UserSettings> {
   if (!patch || typeof patch !== 'object' || Array.isArray(patch)) throw badRequest('settings must be an object');
   const p = patch as Record<string, unknown>;
   const out: Partial<UserSettings> = {};

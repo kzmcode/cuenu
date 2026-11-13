@@ -13,10 +13,10 @@ import { DATA_RULE, memoTag } from './prompt';
 import { loadMemoryContext, memoryLines } from './memory';
 import { DECLINE_RE, SIGNAL_LABEL_JA, kindMinConfidence, loadFeedback, type FeedbackContext } from './feedback';
 
-export const POST_CURSOR = 'cursor.postSeq';
+const POST_CURSOR = 'cursor.postSeq';
 const POST_FAILS = 'post.failures';
 const MAX_POST_FAILURES = 4;
-export const MIN_CONFIDENCE = 0.6;
+const MIN_CONFIDENCE = 0.6;
 const MAX_NEW = 15;
 const MAX_RELATED = 8;
 const MAX_PAST_AI = 10;
@@ -66,7 +66,7 @@ function bigrams(s: string): Set<string> {
   for (let i = 0; i < t.length - 1; i++) out.add(t.slice(i, i + 2));
   return out;
 }
-export function similarity(a: string, b: string): number {
+function similarity(a: string, b: string): number {
   const x = bigrams(a);
   const y = bigrams(b);
   if (x.size === 0 || y.size === 0) return 0;
@@ -88,7 +88,7 @@ export interface FilterContext {
   negativeSummaries?: string[];
 }
 
-export const sourceKey = (ids: string[]) => [...new Set(ids)].sort().join(',');
+const sourceKey = (ids: string[]) => [...new Set(ids)].sort().join(',');
 
 /** AI 出力の検証と重複除外（純関数） */
 export function filterCandidates(raw: unknown, f: FilterContext): Candidate[] {

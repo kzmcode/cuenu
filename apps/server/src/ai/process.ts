@@ -9,7 +9,7 @@ import { AiError, generateJson, type AiClient } from './client';
 import { DATA_RULE, memoTag } from './prompt';
 import { canonicalizeTags, normalizeEmoji } from './tags';
 
-export const SCAN_CURSOR = 'cursor.scan';
+const SCAN_CURSOR = 'cursor.scan';
 const EMBED_MODEL_KEY = 'embed.modelKey';
 
 /** 埋め込みモデル/次元が変わったら埋め込みジョブを作り直し、スキャンを最初からやり直す */
@@ -160,7 +160,7 @@ export async function runTagJobs(ctx: Ctx, ai: AiClient, limit: number): Promise
   return live.length;
 }
 
-export function embedText(m: Pick<MemoRow, 'body'>): string {
+function embedText(m: Pick<MemoRow, 'body'>): string {
   return m.body.slice(0, 2000);
 }
 

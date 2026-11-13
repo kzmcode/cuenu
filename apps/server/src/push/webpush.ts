@@ -35,11 +35,11 @@ function publicJwk(raw: Uint8Array): JsonWebKey {
   return { kty: 'EC', crv: 'P-256', x: b64urlEncode(raw.slice(1, 33)), y: b64urlEncode(raw.slice(33, 65)), ext: true };
 }
 
-export async function importEcdhPublic(raw: Uint8Array): Promise<CryptoKey> {
+async function importEcdhPublic(raw: Uint8Array): Promise<CryptoKey> {
   return crypto.subtle.importKey('raw', bytes(raw), { name: 'ECDH', namedCurve: 'P-256' }, true, []);
 }
 
-export async function importPrivate(d: Uint8Array, pub: Uint8Array, alg: 'ECDH' | 'ECDSA'): Promise<CryptoKey> {
+async function importPrivate(d: Uint8Array, pub: Uint8Array, alg: 'ECDH' | 'ECDSA'): Promise<CryptoKey> {
   const jwk: JsonWebKey = { ...publicJwk(pub), d: b64urlEncode(d) };
   return crypto.subtle.importKey(
     'jwk',

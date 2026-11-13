@@ -2,8 +2,8 @@ import type { ImageSummarizeRequest, ImageSummarizeResponse } from '@cuenu/core'
 import { AiError, type AiClient } from './ai/client';
 import { badRequest } from './http';
 
-export const IMAGE_MIME = ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif'];
-export const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+const IMAGE_MIME = ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif'];
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
 const SYSTEM = [
   'あなたはメモアプリの画像要約器です。画像の内容を日本語で短く（3 文・150 字程度まで）要約します。',
@@ -13,7 +13,7 @@ const SYSTEM = [
   '要約文だけを出力し、前置きや Markdown の見出しは付けないでください。',
 ].join('\n');
 
-export function validateImageRequest(b: ImageSummarizeRequest): void {
+function validateImageRequest(b: ImageSummarizeRequest): void {
   if (!b || typeof b.memoId !== 'string' || !b.memoId || b.memoId.length > 100) throw badRequest('memoId required');
   if (typeof b.mimeType !== 'string' || !IMAGE_MIME.includes(b.mimeType)) throw badRequest('unsupported mimeType');
   if (typeof b.dataBase64 !== 'string' || !b.dataBase64) throw badRequest('dataBase64 required');

@@ -50,7 +50,7 @@ export interface AiNotifierDeps {
   seen: SeenStore;
 }
 
-export function isNewAiPost(m: MemoWithMeta | null): m is MemoWithMeta {
+function isNewAiPost(m: MemoWithMeta | null): m is MemoWithMeta {
   return !!m && m.author === 'ai' && m.parentId === null && m.deletedAt === null;
 }
 

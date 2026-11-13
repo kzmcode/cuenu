@@ -8,7 +8,7 @@ import { intVar, type Env } from './env';
 import { b64Decode, b64Encode } from './util';
 import { tagKey } from './ai/tags';
 
-export const DEFAULT_SCAN_LIMIT = 2000;
+const DEFAULT_SCAN_LIMIT = 2000;
 const TAG_CANDIDATES = 300;
 
 export interface Quantized {
@@ -27,13 +27,13 @@ export function quantize(v: number[]): Quantized {
   return { vector: b64Encode(new Uint8Array(q.buffer)), scale: maxAbs };
 }
 
-export function dequantizeView(vector: string): Int8Array {
+function dequantizeView(vector: string): Int8Array {
   const b = b64Decode(vector);
   return new Int8Array(b.buffer, b.byteOffset, b.byteLength);
 }
 
 /** 量子化ベクトル同士のコサイン類似度（近似） */
-export function cosineQ(a: Int8Array, sa: number, b: Int8Array, sb: number): number {
+function cosineQ(a: Int8Array, sa: number, b: Int8Array, sb: number): number {
   const n = Math.min(a.length, b.length);
   let dot = 0;
   for (let i = 0; i < n; i++) dot += a[i]! * b[i]!;
@@ -46,7 +46,7 @@ interface EmbRow {
   scale: number;
 }
 
-export function scanLimit(env: Env): number {
+function scanLimit(env: Env): number {
   return intVar(env.SEMANTIC_SCAN_LIMIT, DEFAULT_SCAN_LIMIT, 100, 20000);
 }
 
@@ -89,7 +89,7 @@ export async function nearest(
 }
 
 /** クエリ文字列に含まれる既存タグ（語彙）を候補絞り込みのヒントにする */
-export function tagHintsFor(query: string, vocabulary: string[]): string[] {
+function tagHintsFor(query: string, vocabulary: string[]): string[] {
   const qk = tagKey(query);
   return vocabulary.filter((t) => {
     const k = tagKey(t);
@@ -116,7 +116,7 @@ export async function tagVocabulary(db: Db, recent = 300, max = 60): Promise<str
     .map(([t]) => t);
 }
 
-export async function indexCounts(db: Db, ai: AiClient): Promise<{ indexedCount: number; pendingCount: number }> {
+async function indexCounts(db: Db, ai: AiClient): Promise<{ indexedCount: number; pendingCount: number }> {
   const idx = await db.first<{ n: number }>(
     `SELECT COUNT(*) AS n FROM embeddings WHERE model = ? AND dim = ?`,
     ai.embedModel,

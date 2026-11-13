@@ -1,6 +1,6 @@
 // 自動タグの正規化（表記揺れ・重複を減らす）
 
-export const MAX_TAGS_PER_MEMO = 5;
+const MAX_TAGS_PER_MEMO = 5;
 
 const EMOJI_RE = /^(?:\p{Extended_Pictographic}|\p{Regional_Indicator})/u;
 

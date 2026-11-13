@@ -12,16 +12,16 @@ import { generateJson, type AiClient } from './client';
 import { DATA_RULE, escapeData, memoTag } from './prompt';
 
 /** これより新しいメモは要約せず、個別のメモとして扱う */
-export const RECENT_DAYS = 14;
+const RECENT_DAYS = 14;
 /** これより古い月は、週の要約をまとめた月の要約にする */
-export const MONTH_AFTER_DAYS = 90;
+const MONTH_AFTER_DAYS = 90;
 export const MAX_PER_RUN = 3;
 /** 1 週の要約に渡すメモの上限（超えたら長いものを優先して切り詰める） */
 const MAX_MEMOS_PER_WEEK = 120;
 const BODY_MAX = 300;
 /** 提案生成に渡す要約の件数 */
-export const CONTEXT_WEEKS = 8;
-export const CONTEXT_MONTHS = 12;
+const CONTEXT_WEEKS = 8;
+const CONTEXT_MONTHS = 12;
 /** 一度に遡る週の数（初回に大量の過去データがある場合も少しずつ進める） */
 const SCAN_WEEKS = 160;
 
@@ -54,7 +54,7 @@ interface WeekStat {
 }
 
 /** tz の現在の UTC からのずれ（分）。週の区切りに使う（夏時間の切り替え週は数時間ずれうる） */
-export function tzOffsetMinutes(now: Date, tz: string): number {
+function tzOffsetMinutes(now: Date, tz: string): number {
   const startUtc = Date.parse(localDayStartUtc(localDay(now, tz), tz));
   const localMidnightAsUtc = Date.parse(localDay(now, tz) + 'T00:00:00Z');
   return Math.round((localMidnightAsUtc - startUtc) / 60000);

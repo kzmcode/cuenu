@@ -3,6 +3,8 @@
   "private": true,
   "packageManager": "pnpm@12.15.0",
   "scripts": {
+    "setup:dev": "node scripts/setup.mjs dev",
+    "setup:deploy": "node scripts/setup.mjs deploy",
     "dev:web": "pnpm --filter @cuenu/web dev",
     "dev:server": "pnpm --filter @cuenu/server dev",
     "dev:desktop": "pnpm --filter @cuenu/desktop tauri dev",
@@ -14,8 +16,7 @@
     "node": ">=24"
   },
   "devDependencies": {
-    "typescript": "^5.9.0",
-    "vitest": "^4.1.12"
+    "typescript": "^5.9.0"
   },
   "license": "MIT"
 }

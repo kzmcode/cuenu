@@ -24,7 +24,7 @@ import { deleteSubscription, saveSubscription } from './push/notify';
 import { getSettings, putSettings } from './settings';
 import { parsePullParams, pull, push } from './sync';
 
-export const MIN_CLIENT_API_VERSION = 1;
+const MIN_CLIENT_API_VERSION = 1;
 
 export async function handleApi(ctx: Ctx, req: Request): Promise<Response> {
   const origin = allowedOrigin(req, ctx.env.CORS_ORIGINS);

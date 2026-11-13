@@ -2,7 +2,7 @@ import type { Db } from './db';
 import { stmt, type Stmt } from './db';
 
 export type JobKind = 'tag' | 'embed';
-export const MAX_ATTEMPTS = 5;
+const MAX_ATTEMPTS = 5;
 const BASE_BACKOFF_MS = 15 * 60_000;
 const MAX_BACKOFF_MS = 12 * 3600_000;
 
@@ -55,7 +55,7 @@ export function doneStmt(j: JobRow, now: string): Stmt {
   );
 }
 
-export function backoffMs(attempts: number): number {
+function backoffMs(attempts: number): number {
   return Math.min(MAX_BACKOFF_MS, BASE_BACKOFF_MS * 2 ** Math.max(0, attempts - 1));
 }
 

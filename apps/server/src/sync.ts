@@ -5,8 +5,8 @@ import { badRequest } from './http';
 import { getMemo, getMemoRow, rowToMemo, type MemoRow } from './memos';
 import { isIsoDate } from './util';
 
-export const MAX_OPS = 100;
-export const MAX_BODY_CHARS = 200_000;
+const MAX_OPS = 100;
+const MAX_BODY_CHARS = 200_000;
 const MAX_IMAGE_JSON = 20_000;
 const MAX_ID = 100;
 
@@ -297,8 +297,8 @@ function imageJson(img: ImageSummaryState | null): string | null {
   return img ? JSON.stringify(img) : null;
 }
 
-export const PULL_DEFAULT = 200;
-export const PULL_MAX = 500;
+const PULL_DEFAULT = 200;
+const PULL_MAX = 500;
 
 export async function pull(ctx: Ctx, since: number, limit: number): Promise<PullResponse> {
   const rows = await ctx.db.all<MemoRow>(

@@ -8,7 +8,7 @@ interface GeminiErrorBody {
   error?: { code?: number; message?: string; status?: string; details?: { '@type'?: string; retryDelay?: string }[] };
 }
 
-export function parseRetryAfter(res: Response, body: GeminiErrorBody | null): number {
+function parseRetryAfter(res: Response, body: GeminiErrorBody | null): number {
   const h = res.headers.get('retry-after');
   if (h && /^\d+$/.test(h)) return Math.max(1, Number(h));
   const d = body?.error?.details?.find((x) => x['@type']?.includes('RetryInfo'))?.retryDelay;
@@ -19,7 +19,7 @@ export function parseRetryAfter(res: Response, body: GeminiErrorBody | null): nu
   return 60;
 }
 
-export class GeminiClient implements AiClient {
+class GeminiClient implements AiClient {
   readonly model: string;
   readonly embedModel: string;
   readonly embedDim: number;

@@ -13,9 +13,9 @@ export type ReplyLabel = 'adopted' | 'done' | 'later' | 'declined' | 'neutral';
 export type FeedbackSignal = 'liked' | 'adopted' | 'done' | 'later' | 'declined' | 'hidden' | 'ignored' | 'replied' | 'pending';
 
 /** この時間反応がなければ「反応なし」とみなす */
-export const IGNORE_AFTER_HOURS = 72;
+const IGNORE_AFTER_HOURS = 72;
 /** 評価対象にする直近の AI 投稿数 */
-export const EVAL_WINDOW = 40;
+const EVAL_WINDOW = 40;
 const LABEL_BATCH = 20;
 const EXAMPLES = 12;
 const LABELS: ReplyLabel[] = ['adopted', 'done', 'later', 'declined', 'neutral'];
