@@ -40,10 +40,32 @@ export function errorResponse(e: HttpError): Response {
 export const badRequest = (m: string) => new HttpError(400, 'bad_request', m);
 
 export async function readJson<T>(req: Request, maxBytes = 1_000_000): Promise<T> {
+  const tooLarge = () => new HttpError(413, 'bad_request', 'request too large');
   const len = Number(req.headers.get('content-length') ?? '0');
-  if (len > maxBytes) throw new HttpError(413, 'bad_request', 'request too large');
-  const text = await req.text();
-  if (text.length > maxBytes) throw new HttpError(413, 'bad_request', 'request too large');
+  if (len > maxBytes) throw tooLarge();
+  // Content-Length のない（chunked の）本文もバイト数で打ち切る。上限を超えた分はメモリに溜めない
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  if (req.body) {
+    const reader = req.body.getReader();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel().catch(() => {});
+        throw tooLarge();
+      }
+      chunks.push(value);
+    }
+  }
+  const buf = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) {
+    buf.set(c, off);
+    off += c.byteLength;
+  }
+  const text = new TextDecoder().decode(buf);
   try {
     return JSON.parse(text) as T;
   } catch {

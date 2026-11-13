@@ -297,7 +297,7 @@ describe('push notifications', () => {
       },
     });
     const login = (await (await handleApi(ctx, req('/api/auth/login', { method: 'POST', json: { password: 'secret-pw', deviceName: 't' } }))).json()) as { token: string; deviceId: string };
-    for (const ep of ['https://push.example.net/ok', 'https://push.example.net/gone']) {
+    for (const ep of ['https://fcm.googleapis.com/fcm/send/ok', 'https://fcm.googleapis.com/fcm/send/gone']) {
       const r = await handleApi(ctx, req('/api/push/subscriptions', { method: 'POST', token: login.token, json: { deviceId: login.deviceId, subscription: { endpoint: ep, keys: await ua() } } }));
       expect(r.status).toBe(204);
     }
@@ -307,7 +307,7 @@ describe('push notifications', () => {
     expect(r.notified).toBe(1);
     expect(sent).toHaveLength(2);
     const subs = ctx.db.raw.prepare(`SELECT endpoint FROM push_subscriptions`).all() as { endpoint: string }[];
-    expect(subs.map((s) => s.endpoint)).toEqual(['https://push.example.net/ok']);
+    expect(subs.map((s) => s.endpoint)).toEqual(['https://fcm.googleapis.com/fcm/send/ok']);
     // 再実行しても重複通知しない
     ctx.db.raw.prepare(`UPDATE ai_posts SET notified = 0`).run();
     expect(await notifyPendingPosts(ctx)).toBe(0);
@@ -321,11 +321,35 @@ describe('push subscriptions', () => {
     const { token } = (await (await handleApi(ctx, req('/api/auth/login', { method: 'POST', json: { password: 'secret-pw', deviceName: 't' } }))).json()) as { token: string };
     const save = (subscription: unknown) => handleApi(ctx, req('/api/push/subscriptions', { method: 'POST', token, json: { subscription } }));
     const keys = { p256dh: b64urlEncode(new Uint8Array(65).fill(4)), auth: b64urlEncode(new Uint8Array(16)) };
-    expect((await save({ endpoint: 'http://push.example.net/x', keys })).status).toBe(400);
+    expect((await save({ endpoint: 'http://fcm.googleapis.com/fcm/send/x', keys })).status).toBe(400);
     expect((await save({ endpoint: 'https://', keys })).status).toBe(400);
-    expect((await save({ endpoint: 'https://push.example.net/x', keys: { ...keys, auth: 'short' } })).status).toBe(400);
-    expect((await save({ endpoint: 'https://push.example.net/x', keys: { ...keys, p256dh: '!!!' } })).status).toBe(400);
-    expect((await save({ endpoint: 'https://push.example.net/x', keys })).status).toBe(204);
+    expect((await save({ endpoint: 'https://fcm.googleapis.com/fcm/send/x', keys: { ...keys, auth: 'short' } })).status).toBe(400);
+    expect((await save({ endpoint: 'https://fcm.googleapis.com/fcm/send/x', keys: { ...keys, p256dh: '!!!' } })).status).toBe(400);
+    expect((await save({ endpoint: 'https://fcm.googleapis.com/fcm/send/x', keys })).status).toBe(204);
+  });
+
+  test('accepts only known push service hosts', async () => {
+    const ctx = makeCtx();
+    const { token } = (await (await handleApi(ctx, req('/api/auth/login', { method: 'POST', json: { password: 'secret-pw', deviceName: 't' } }))).json()) as { token: string };
+    const save = (endpoint: string) =>
+      handleApi(ctx, req('/api/push/subscriptions', { method: 'POST', token, json: { subscription: { endpoint, keys } } }));
+    const keys = { p256dh: b64urlEncode(new Uint8Array(65).fill(4)), auth: b64urlEncode(new Uint8Array(16)) };
+    for (const ok of [
+      'https://web.push.apple.com/abc',
+      'https://updates.push.services.mozilla.com/wpush/v2/abc',
+      'https://wns2-par02p.notify.windows.com/w/?token=abc',
+    ]) {
+      expect((await save(ok)).status).toBe(204);
+    }
+    for (const bad of [
+      'https://evil.example/fcm.googleapis.com',
+      'https://fcm.googleapis.com.evil.example/x',
+      'https://evilpush.apple.com/x',
+      'https://fcm.googleapis.com:8443/x',
+      'https://169.254.169.254/latest',
+    ]) {
+      expect((await save(bad)).status).toBe(400);
+    }
   });
 });
 

@@ -5,9 +5,9 @@ import { getSettings } from '../settings';
 import { b64urlDecode, truncate } from '../util';
 import { buildPushRequest, type VapidKeys } from './webpush';
 
-export const DEFAULT_NOTIFICATION_BODY = '新しいAIの提案があります';
+const DEFAULT_NOTIFICATION_BODY = '新しいAIの提案があります';
 
-export function vapidKeys(ctx: Ctx): VapidKeys | null {
+function vapidKeys(ctx: Ctx): VapidKeys | null {
   const { VAPID_PUBLIC_KEY: pub, VAPID_PRIVATE_KEY: priv, VAPID_SUBJECT: sub } = ctx.env;
   return pub && priv && sub ? { publicKey: pub, privateKey: priv, subject: sub } : null;
 }
@@ -25,7 +25,7 @@ export async function saveSubscription(ctx: Ctx, deviceId: string, body: unknown
   const endpoint = s?.endpoint;
   const p256dh = s?.keys?.p256dh;
   const auth = s?.keys?.auth;
-  if (typeof endpoint !== 'string' || endpoint.length > 2000 || !isHttpsUrl(endpoint)) throw badRequest('invalid endpoint');
+  if (typeof endpoint !== 'string' || endpoint.length > 2000 || !isPushEndpoint(endpoint)) throw badRequest('invalid endpoint');
   if (typeof p256dh !== 'string' || typeof auth !== 'string' || !validKeys(p256dh, auth)) {
     throw badRequest('invalid subscription keys');
   }
@@ -41,10 +41,15 @@ export async function saveSubscription(ctx: Ctx, deviceId: string, body: unknown
   );
 }
 
-function isHttpsUrl(s: string): boolean {
+/** ブラウザのプッシュサービスのホスト。任意の URL へサーバーから POST させない（SSRF 対策） */
+const PUSH_HOST_SUFFIXES = ['fcm.googleapis.com', 'push.apple.com', 'push.services.mozilla.com', 'notify.windows.com'];
+
+export function isPushEndpoint(s: string): boolean {
   try {
     const u = new URL(s);
-    return u.protocol === 'https:' && !u.username && !u.password;
+    if (u.protocol !== 'https:' || u.username || u.password || u.port) return false;
+    const host = u.hostname.toLowerCase();
+    return PUSH_HOST_SUFFIXES.some((h) => host === h || host.endsWith(`.${h}`));
   } catch {
     return false;
   }

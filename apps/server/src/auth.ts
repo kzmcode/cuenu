@@ -17,9 +17,10 @@ export const RATE = {
   ipMaxFailures: 5,
   ipWindowMs: 15 * 60_000,
   ipLockMs: 15 * 60_000,
-  globalMaxFailures: 20,
+  // 全体の上限はロックせず、ウィンドウが過ぎれば回復する（他人に長時間締め出されないように）。
+  // 登録済みの端末からのログインは全体の上限の対象外
+  globalMaxFailures: 50,
   globalWindowMs: 60 * 60_000,
-  globalLockMs: 60 * 60_000,
 };
 const LAST_SEEN_THROTTLE_MS = 5 * 60_000;
 
@@ -39,7 +40,7 @@ async function timingSafeEqualStr(a: string, b: string): Promise<boolean> {
 let fpCache: { pw: string; fp: string } | null = null;
 
 /** OWNER_PASSWORD の指紋。端末をログイン時のパスワードに結び付け、変更されたら失効させる */
-export async function passwordFingerprint(password: string): Promise<string> {
+async function passwordFingerprint(password: string): Promise<string> {
   if (fpCache?.pw === password) return fpCache.fp;
   const key = await crypto.subtle.importKey('raw', utf8(password), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const sig = new Uint8Array(await crypto.subtle.sign('HMAC', key, utf8('cuenu-device-binding-v1')));
@@ -83,14 +84,24 @@ interface Limit {
   key: string;
   max: number;
   windowMs: number;
+  /** 上限に達したときにロックする時間。0 ならロックせず、ウィンドウ内の超過分だけ拒否する */
   lockMs: number;
 }
 
-function limitsFor(ip: string): Limit[] {
-  return [
-    { key: `ip:${ip}`, max: RATE.ipMaxFailures, windowMs: RATE.ipWindowMs, lockMs: RATE.ipLockMs },
-    { key: 'global', max: RATE.globalMaxFailures, windowMs: RATE.globalWindowMs, lockMs: RATE.globalLockMs },
-  ];
+function limitsFor(ip: string, knownDevice: boolean): Limit[] {
+  const limits: Limit[] = [{ key: `ip:${ipKey(ip)}`, max: RATE.ipMaxFailures, windowMs: RATE.ipWindowMs, lockMs: RATE.ipLockMs }];
+  if (!knownDevice) limits.push({ key: 'global', max: RATE.globalMaxFailures, windowMs: RATE.globalWindowMs, lockMs: 0 });
+  return limits;
+}
+
+/** IPv6 は 1 契約で /64 を丸ごと持てるので、上位 64 ビットでまとめて数える */
+export function ipKey(ip: string): string {
+  if (!ip.includes(':')) return ip;
+  const [head = '', tail = ''] = ip.toLowerCase().split('::');
+  const h = head ? head.split(':') : [];
+  const t = tail ? tail.split(':') : [];
+  const groups = ip.includes('::') ? [...h, ...Array(Math.max(0, 8 - h.length - t.length)).fill('0'), ...t] : h;
+  return `${groups.slice(0, 4).map((g) => g.replace(/^0+(?=.)/, '')).join(':')}::/64`;
 }
 
 /**
@@ -126,12 +137,14 @@ export async function login(ctx: Ctx, body: LoginRequest, ip: string): Promise<L
     throw badRequest('password and deviceName are required');
   }
   const deviceName = body.deviceName.trim().slice(0, 100) || 'device';
-  const limits = limitsFor(ip);
-  await checkLocked(ctx, limits.map((l) => l.key));
+  let deviceId = typeof body.deviceId === 'string' && body.deviceId.length <= 100 ? body.deviceId : null;
+  const known = !!deviceId && !!(await ctx.db.first(`SELECT 1 AS x FROM devices WHERE id = ?`, deviceId));
+  const limits = limitsFor(ip, known);
+  await checkLocked(ctx, limits.filter((l) => l.lockMs > 0).map((l) => l.key));
   const counts: number[] = [];
   for (const l of limits) {
     const n = await chargeAttempt(ctx, l);
-    if (n > l.max) throw new HttpError(429, 'rate_limited', 'too many login attempts', Math.ceil(l.lockMs / 1000));
+    if (n > l.max) throw new HttpError(429, 'rate_limited', 'too many login attempts', Math.ceil((l.lockMs || l.windowMs) / 1000));
     counts.push(n);
   }
 
@@ -139,7 +152,7 @@ export async function login(ctx: Ctx, body: LoginRequest, ip: string): Promise<L
   if (!ok) {
     const nowMs = ctx.now().getTime();
     const locks = limits
-      .filter((l, i) => counts[i]! >= l.max)
+      .filter((l, i) => l.lockMs > 0 && counts[i]! >= l.max)
       .map((l) =>
         stmt(
           `UPDATE login_attempts SET locked_until = ? WHERE key = ? AND (locked_until IS NULL OR locked_until < ?)`,
@@ -154,7 +167,7 @@ export async function login(ctx: Ctx, body: LoginRequest, ip: string): Promise<L
   // 成功: この IP の記録を消し、全体の失敗回数からは先に数えた分を戻す
   await ctx.db.batch([
     stmt(`DELETE FROM login_attempts WHERE key = ?`, limits[0]!.key),
-    stmt(`UPDATE login_attempts SET failures = failures - 1 WHERE key = ? AND failures > 0`, limits[1]!.key),
+    ...limits.slice(1).map((l) => stmt(`UPDATE login_attempts SET failures = failures - 1 WHERE key = ? AND failures > 0`, l.key)),
   ]);
 
   await purgeStaleDevices(ctx);
@@ -162,7 +175,6 @@ export async function login(ctx: Ctx, body: LoginRequest, ip: string): Promise<L
   const token = `cu_${randomToken(32)}`;
   const hash = await sha256Hex(token);
   const now = ctx.now().toISOString();
-  let deviceId = typeof body.deviceId === 'string' && body.deviceId.length <= 100 ? body.deviceId : null;
   if (deviceId) {
     // 既存端末の再ログイン: 旧トークンを置き換える
     const r = await ctx.db.run(

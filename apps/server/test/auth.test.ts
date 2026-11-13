@@ -83,8 +83,29 @@ describe('auth', () => {
 
   test('global limit across IPs', async () => {
     const ctx = makeCtx();
-    for (let i = 0; i < 20; i++) await login(ctx, 'wrong', {}, `10.0.0.${i}`);
+    // 既存端末を 1 台登録しておく
+    const { deviceId } = (await (await login(ctx, 'secret-pw', {}, '8.8.8.8')).json()) as { deviceId: string };
+    for (let i = 0; i < 50; i++) await login(ctx, 'wrong', {}, `10.0.${Math.floor(i / 4)}.${i}`);
+    // 新しい端末は全体の上限で止まる
     expect((await login(ctx, 'secret-pw', {}, '9.9.9.9')).status).toBe(429);
+    // 登録済みの端末は全体の上限の対象外（IP ごとの上限は残る）
+    expect((await login(ctx, 'secret-pw', { deviceId }, '9.9.9.9')).status).toBe(200);
+    // 長時間ロックはせず、ウィンドウが過ぎれば回復する
+    ctx.clock.t += 61 * 60_000;
+    expect((await login(ctx, 'secret-pw', {}, '9.9.9.7')).status).toBe(200);
+  });
+
+  test('unknown device ids do not bypass the global limit', async () => {
+    const ctx = makeCtx();
+    for (let i = 0; i < 50; i++) await login(ctx, 'wrong', { deviceId: 'guess' }, `10.0.${Math.floor(i / 4)}.${i}`);
+    expect((await login(ctx, 'secret-pw', { deviceId: 'guess' }, '9.9.9.9')).status).toBe(429);
+  });
+
+  test('IPv6 addresses are limited per /64', async () => {
+    const ctx = makeCtx();
+    for (let i = 1; i <= 5; i++) expect((await login(ctx, 'wrong', {}, `2001:db8:1:2::${i}`)).status).toBe(401);
+    expect((await login(ctx, 'secret-pw', {}, '2001:0db8:0001:0002:ffff::1')).status).toBe(429);
+    expect((await login(ctx, 'secret-pw', {}, '2001:db8:1:3::1')).status).toBe(200);
   });
 
   test('login without OWNER_PASSWORD configured fails closed', async () => {
@@ -118,7 +139,7 @@ describe('auth', () => {
 
   test('successful logins do not count toward the global limit', async () => {
     const ctx = makeCtx();
-    for (let i = 0; i < 19; i++) await login(ctx, 'wrong', {}, `10.0.0.${i}`);
+    for (let i = 0; i < 49; i++) await login(ctx, 'wrong', {}, `10.0.${Math.floor(i / 4)}.${i}`);
     for (let i = 0; i < 5; i++) expect((await login(ctx, 'secret-pw', {}, '9.9.9.9')).status).toBe(200);
     expect((await login(ctx, 'secret-pw', {}, '9.9.9.8')).status).toBe(200);
   });
