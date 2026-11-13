@@ -143,10 +143,17 @@ jobs:
           DIRECT: ${{ vars.HOMEBREW_TAP_DIRECT_PUSH }}
         run: |
           mkdir -p tap/Casks
-          sed -e "s|^  version \".*\"|  version \"$VERSION\"|" \
-              -e "s|^  sha256 \".*\"|  sha256 \"$SHA256\"|" \
-              -e "s|YOUR_ID/cuenu|$SOURCE_REPO|g" \
-              src/packaging/homebrew/cuenu.rb > tap/Casks/cuenu.rb
+          if [ -f tap/Casks/cuenu.rb ]; then
+            # 既存の Cask は version と sha256 だけ更新する（Tap 側のコメントや書式は保つ）
+            sed -i -e "s|^  version \".*\"|  version \"$VERSION\"|" \
+                   -e "s|^  sha256 \".*\"|  sha256 \"$SHA256\"|" tap/Casks/cuenu.rb
+          else
+            # 初回は雛形から作る
+            sed -e "s|^  version \".*\"|  version \"$VERSION\"|" \
+                -e "s|^  sha256 \".*\"|  sha256 \"$SHA256\"|" \
+                -e "s|YOUR_ID/cuenu|$SOURCE_REPO|g" \
+                src/packaging/homebrew/cuenu.rb > tap/Casks/cuenu.rb
+          fi
           cd tap
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
