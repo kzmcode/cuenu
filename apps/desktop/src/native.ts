@@ -41,11 +41,11 @@ export interface NativeBridge {
 
 export type NativeEvent = 'quick:shown' | 'quick:close-requested' | 'connection:changed';
 
-export function isTauriRuntime(): boolean {
+function isTauriRuntime(): boolean {
   return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 }
 
-export async function createTauriBridge(): Promise<NativeBridge> {
+async function createTauriBridge(): Promise<NativeBridge> {
   const { invoke } = await import('@tauri-apps/api/core');
   const { listen } = await import('@tauri-apps/api/event');
   return {
@@ -125,6 +125,11 @@ export function createBrowserDevBridge(storage: Storage = localStorage): NativeB
 
 let cached: Promise<NativeBridge> | null = null;
 export function getBridge(): Promise<NativeBridge> {
-  cached ??= isTauriRuntime() ? createTauriBridge() : Promise.resolve(createBrowserDevBridge());
+  // ブラウザ用の代替（トークンを localStorage に置く）は開発時の画面確認だけで使う
+  cached ??= isTauriRuntime()
+    ? createTauriBridge()
+    : import.meta.env.DEV
+      ? Promise.resolve(createBrowserDevBridge())
+      : Promise.reject(new Error('Cuenu desktop must run inside the Tauri app'));
   return cached;
 }

@@ -42,7 +42,7 @@ pub fn is_valid_env_key(k: &str) -> bool {
     !k.is_empty() && k.len() <= 64 && k.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
 }
 
-/// connection.ts の normalizeServerUrl と同じ条件の origin か（https、開発用に localhost / 127.0.0.1 の http）
+/// connection.ts の normalizeServerUrl と同じ条件の origin か（https。開発ビルドに限り localhost / 127.0.0.1 の http）
 fn is_valid_server_origin(u: &str) -> bool {
     let (host_port, local_only) = if let Some(rest) = u.strip_prefix("https://") {
         (rest, false)
@@ -55,6 +55,10 @@ fn is_valid_server_origin(u: &str) -> bool {
         return false;
     }
     if local_only {
+        // 配布版の CSP は http を通さないので、設定としても受け付けない
+        if !cfg!(debug_assertions) {
+            return false;
+        }
         let host = host_port.split(':').next().unwrap_or("");
         return host == "localhost" || host == "127.0.0.1";
     }

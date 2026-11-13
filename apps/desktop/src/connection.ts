@@ -7,7 +7,7 @@ import type { EnvConfig, NativeBridge } from './native';
 
 export type FetchFn = (input: string, init?: RequestInit) => Promise<Response>;
 
-export const DEVICE_NAME = 'Mac';
+const DEVICE_NAME = 'Mac';
 const UPDATE_APP_HINT = 'Mac アプリを更新してください（brew update && brew upgrade --cask cuenu）。';
 const UPDATE_SERVER_HINT = 'サーバーを最新版で再デプロイしてください（README の更新手順）。';
 
@@ -16,10 +16,11 @@ const UPDATE_SERVER_HINT = 'サーバーを最新版で再デプロイしてく�
 export type UrlCheck = { ok: true; origin: string } | { ok: false; error: string };
 
 /**
- * 入力を origin に正規化する。https のみ許可（localhost / 127.0.0.1 は開発用に http も可）。
+ * 入力を origin に正規化する。https のみ許可（開発ビルドに限り localhost / 127.0.0.1 の http も可。
+ * 配布版の CSP は http を許可しない）。
  * Cuenu サーバーは origin 直下（/api/...）で動く前提なのでパスは捨てる。
  */
-export function normalizeServerUrl(input: string): UrlCheck {
+export function normalizeServerUrl(input: string, allowLocalHttp: boolean = import.meta.env.DEV): UrlCheck {
   const raw = input.trim();
   if (!raw) return { ok: false, error: 'サーバーURLを入力してください' };
   const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(raw) ? raw : `https://${raw}`;
@@ -29,7 +30,7 @@ export function normalizeServerUrl(input: string): UrlCheck {
   } catch {
     return { ok: false, error: 'URLの形式が正しくありません' };
   }
-  const local = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+  const local = allowLocalHttp && (url.hostname === 'localhost' || url.hostname === '127.0.0.1');
   if (url.protocol !== 'https:' && !(url.protocol === 'http:' && local)) {
     return { ok: false, error: 'https:// のURLを指定してください（http はローカル開発時のみ）' };
   }
@@ -63,7 +64,7 @@ async function fetchWithTimeout(fetchFn: FetchFn, url: string, init: RequestInit
   }
 }
 
-export function checkCompatibility(h: HealthResponse, clientApiVersion = API_VERSION): HealthCheck {
+function checkCompatibility(h: HealthResponse, clientApiVersion = API_VERSION): HealthCheck {
   if (h.minClientApiVersion > clientApiVersion) {
     return {
       ok: false,

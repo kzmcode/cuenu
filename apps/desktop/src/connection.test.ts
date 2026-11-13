@@ -40,7 +40,8 @@ describe('normalizeServerUrl', () => {
   it('スキーム補完・origin 化', () => {
     expect(normalizeServerUrl(' cuenu.example.workers.dev/ ')).toEqual({ ok: true, origin: 'https://cuenu.example.workers.dev' });
     expect(normalizeServerUrl('https://Cuenu.Example.dev/app?x=1')).toEqual({ ok: true, origin: 'https://cuenu.example.dev' });
-    expect(normalizeServerUrl('http://localhost:8787')).toEqual({ ok: true, origin: 'http://localhost:8787' });
+    expect(normalizeServerUrl('http://localhost:8787', true)).toEqual({ ok: true, origin: 'http://localhost:8787' });
+    expect(normalizeServerUrl('http://localhost:8787', false).ok).toBe(false);
   });
   it('http（ローカル以外）・空・不正を拒否', () => {
     expect(normalizeServerUrl('http://example.com').ok).toBe(false);
