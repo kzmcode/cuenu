@@ -51,7 +51,7 @@ IPC はウィンドウごとに最小権限。独自 command は `build.rs` の 
 
 ## 初回起動と接続
 
-1. サーバーURLを入力（`https://` 必須。`http://localhost` は開発用に許可）。origin に正規化する。
+1. サーバーURLを入力（`https://` 必須。`http://localhost` / `127.0.0.1` は開発ビルドだけで許可。配布版の CSP（`security.csp`）は http を通さず、開発用の `security.devCsp` だけ localhost を許可する）。origin に正規化する。
 2. `GET /api/health` で `name === 'cuenu'` と API 版を確認。サーバーが要求する `minClientApiVersion` よりアプリが古ければ「アプリを更新」、サーバーの `apiVersion` が古ければ「サーバーを再デプロイ」を表示する。
 3. 所有者パスワード（サーバー Secret `OWNER_PASSWORD`）で `POST /api/auth/login`（`deviceName: "Mac"`、同じサーバーへの再ログインでは保存済み `deviceId` を送る）。
 4. 端末トークンを macOS Keychain（汎用パスワード、サービス `Cuenu`、アカウント `device-token:<envKey>`）に保存し、成功後に接続先を確定。

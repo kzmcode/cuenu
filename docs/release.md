@@ -63,4 +63,4 @@ GitHub Actions でデプロイする場合（任意）: `.github/workflows/deplo
 | `CLOUDFLARE_API_TOKEN` | 利用者自身の API トークン（Workers Scripts 編集・D1 編集の権限） |
 | `CLOUDFLARE_ACCOUNT_ID` | 利用者の Cloudflare アカウント ID |
 
-事前に `apps/server/wrangler.jsonc` の `database_id` を自分の D1 の ID にしたコミットが必要。サーバーの Secret（`OWNER_PASSWORD` 等）は workflow では登録しない（`wrangler secret put` で一度だけ登録）。
+事前に手元で一度 `pnpm setup:deploy` を実行し、自分の D1 の ID に書き換わった `apps/server/wrangler.jsonc` をコミットしておく。サーバーの Secret（`OWNER_PASSWORD` 等）は workflow では登録しない（初回の `pnpm setup:deploy` で登録済みになる）。

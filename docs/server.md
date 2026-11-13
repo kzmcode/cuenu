@@ -5,13 +5,12 @@ Cloudflare Workers + D1 + Cron Triggers + Gemini Developer API + Web Push。PWA�
 ## ローカル開発
 
 ```bash
-source ~/.nvm/nvm.sh; nvm use default          # Node 24
-cp apps/server/.dev.vars.example apps/server/.dev.vars
-pnpm --filter @cuenu/server vapid:generate     # 出力を .dev.vars の VAPID_* に貼る（Push を試す場合）
-pnpm --filter @cuenu/server db:migrate:local   # D1 ローカル（.wrangler/state）
+pnpm setup:dev                                 # 依存導入・.dev.vars 作成（VAPID 鍵も生成）・ローカル D1 のマイグレーション
 pnpm --filter @cuenu/web build                 # assets 配信用（無くても /api は動く）
 pnpm dev:server                                # http://localhost:8787
 ```
+
+手作業なら `cp apps/server/.dev.vars.example apps/server/.dev.vars` → `pnpm --filter @cuenu/server vapid:generate` の出力を `VAPID_*` に貼る → `pnpm --filter @cuenu/server db:migrate:local`。
 
 - ログイン: `curl -X POST localhost:8787/api/auth/login -H 'content-type: application/json' -d '{"password":"dev-password","deviceName":"dev"}'`
 - 定期処理の手動実行: `POST /api/ai/run`（認証必須。ロック・日次上限は通常どおり）、または wrangler のローカル API `POST /cdn-cgi/local/explorer/api/local/scheduled?worker=cuenu`（body `{"cron":"17 */3 * * *"}`）。`/__scheduled` は assets の SPA フォールバックに吸われるので使えない
@@ -20,13 +19,14 @@ pnpm dev:server                                # http://localhost:8787
 
 ## デプロイ（利用者が自分のアカウントで行う）
 
-1. `npx wrangler login`
-2. `npx wrangler d1 create cuenu` → 出力の `database_id` を `wrangler.jsonc` に設定
-3. `pnpm --filter @cuenu/server db:migrate:remote`
-4. Secret 登録: `npx wrangler secret put OWNER_PASSWORD`（長いランダム文字列推奨）、`GEMINI_API_KEY`、`VAPID_PUBLIC_KEY` `VAPID_PRIVATE_KEY` `VAPID_SUBJECT`
-5. `pnpm --filter @cuenu/web build && pnpm --filter @cuenu/server deploy`
+通常は `pnpm setup:deploy`（`scripts/setup.mjs`）で行う。初回・更新とも同じコマンドで、以下を順に実行する（[README](../README.md#セルフデプロイpwa--サーバー)）。手作業で行う場合も同じ手順になる。
 
-※ 実アカウントへのデプロイ・無料枠での実測は未実施（下記「仮置き・要検証」）。
+1. `cd apps/server && pnpm exec wrangler login`
+2. `pnpm exec wrangler d1 create cuenu` → 作成された D1 の ID（`pnpm exec wrangler d1 list`）を `wrangler.jsonc` の `database_id` に設定
+3. `pnpm --filter @cuenu/web build`
+4. `pnpm --filter @cuenu/server db:migrate:remote`
+5. `pnpm --filter @cuenu/server deploy`
+6. Secret 登録: `pnpm exec wrangler secret put OWNER_PASSWORD`（12 文字以上の長いランダム文字列推奨）、`GEMINI_API_KEY`、`VAPID_PUBLIC_KEY` `VAPID_PRIVATE_KEY` `VAPID_SUBJECT`（`vapid:generate` で生成）
 
 ## 環境変数
 
@@ -46,7 +46,8 @@ pnpm dev:server                                # http://localhost:8787
 
 - エラー: `{ error: { code, message, retryAfterSec? } }`。429 は `Retry-After` ヘッダーも付与
 - 認証: `/api/health` `/api/auth/login` 以外は Bearer 必須。トークンは `cu_` + 32 バイト乱数、D1 には SHA-256 のみ。`lastSeenAt` は 5 分間隔で更新
-- ログイン失敗のレート制限: 同一 IP（`CF-Connecting-IP`）15 分で 5 回失敗 → 15 分ロック、全体で 1 時間 20 回 → 1 時間ロック。ロック中は正しいパスワードでも 429。試行はパスワード照合の前に原子的に数える（`INSERT … ON CONFLICT … RETURNING`。並行リクエストでも上限を超えて試せない）。成功時は IP の記録を消し、全体の回数から 1 回分を戻す
+- ログイン失敗のレート制限: 同一 IP（`CF-Connecting-IP`。IPv6 は /64 単位）15 分で 5 回失敗 → 15 分ロック。ロック中は正しいパスワードでも 429。全体では 1 時間に 50 回までで、超えた分は 429 にするがロックはしない（ウィンドウが過ぎれば回復）。登録済みの端末 ID を付けた再ログインは全体の上限の対象外にし、他人の総当たりで持ち主が締め出されないようにする。試行はパスワード照合の前に原子的に数える（`INSERT … ON CONFLICT … RETURNING`。並行リクエストでも上限を超えて試せない）。成功時は IP の記録を消し、全体の回数から 1 回分を戻す
+- Web Push の購読先は既知のプッシュサービス（`fcm.googleapis.com`・`push.apple.com`・`push.services.mozilla.com`・`notify.windows.com` とそのサブドメイン、https、既定ポート）だけ受け付ける。サーバーから任意の URL へ送らせない
 - 再ログインで `deviceId` を送ると同じ端末の旧トークンを置き換える。`POST /api/auth/logout` と `DELETE /api/devices/:id` は端末行とその Push 購読を削除
 - パスワード変更で全端末を失効: ログイン時に `devices.pw_fp`（`HMAC-SHA256(OWNER_PASSWORD, "cuenu-device-binding-v1")`）を保存し、認証のたびに現在の値と照合。違えばその端末と Push 購読を削除して 401。新パスワードでのログイン時と定期処理（通知の前）でも一括削除する。`pw_fp` が NULL の端末（`0005_password_binding.sql` 適用前のログイン）は次の認証時に現在のパスワードへ結び付ける
 - CORS: 常に `tauri://localhost` `http://tauri.localhost` `https://tauri.localhost` と同一オリジンを許可。他は `CORS_ORIGINS`。許可外 Origin のプリフライトは 403
@@ -122,7 +123,7 @@ AI が 429 を返したら `ai.pausedUntil` まで AI 処理（Cron・画像要�
 - **重複提案の判定**: 文字 bigram Jaccard 0.6、確信度しきい値 0.6 は仮の値
 - **ログイン方式**: 所有者パスワード＋端末トークン（無期限・失効可能。パスワード変更で全端末失効）。パスキー等は未検討
 - `sync_ops` の保持 180 日、ログイン制限の回数・時間は仮の値
-- `wrangler.jsonc` の `database_id` はダミー（デプロイ時に置き換え）。Deploy to Cloudflare ボタンでの自動作成は未検証
+- `wrangler.jsonc` の `database_id` は配布元の D1。フォークした利用者の環境では `pnpm setup:deploy` が自分の D1 の ID に書き換える
 
 ## 絵文字アバター（2026-11-04 追加）
 
